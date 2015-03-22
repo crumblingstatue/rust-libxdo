@@ -1,0 +1,11 @@
+[package]
+
+name = "libxdo"
+version = "0.0.1"
+authors = ["Mika Attila <radiantstatue@gmail.com>"]
+
+[dependencies.libxdo-sys]
+git = "https://github.com/crumblingstatue/rust-libxdo-sys.git"
+
+[dependencies]
+libc = "*"

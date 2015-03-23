@@ -103,6 +103,12 @@ impl XDo {
     pub fn click(&self, button: i32) -> OpResult {
         xdo!(sys::xdo_click(self.handle, sys::CURRENTWINDOW, button as c_int))
     }
+    pub fn mouse_down(&self, button: i32) -> OpResult {
+        xdo!(sys::xdo_mousedown(self.handle, sys::CURRENTWINDOW, button as c_int))
+    }
+    pub fn mouse_up(&self, button: i32) -> OpResult {
+        xdo!(sys::xdo_mouseup(self.handle, sys::CURRENTWINDOW, button as c_int))
+    }
     pub fn type_text(&self, text: &str, delay: Duration) -> OpResult {
         let microsecs = try_microsecs!(delay);
         let string = try!(CString::new(text));

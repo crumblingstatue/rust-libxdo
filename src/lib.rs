@@ -53,3 +53,9 @@ impl XDo {
         }
     }
 }
+
+impl Drop for XDo {
+    fn drop(&mut self) {
+        unsafe { sys::xdo_free(self.handle); }
+    }
+}

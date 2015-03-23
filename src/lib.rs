@@ -27,6 +27,17 @@ impl FromError<NulError> for XDoCreationError {
 struct XDoOperationError;
 pub type OpResult = Result<(), XDoOperationError>;
 
+macro_rules! xdo (
+    ($fncall: expr) => {
+        unsafe {
+            match $fncall {
+                0 => Ok(()),
+                _ => Err(XDoOperationError)
+            }
+        }
+    }
+);
+
 impl XDo {
     pub fn new(display: Option<&str>) -> Result<XDo, XDoCreationError> {
         let display = match display {
@@ -45,12 +56,10 @@ impl XDo {
         })
     }
     pub fn move_mouse(&self, x: i32, y: i32, screen: i32) -> OpResult {
-        unsafe {
-            match sys::xdo_mousemove(self.handle, x as c_int, y as c_int, screen as c_int) {
-                0 => Ok(()),
-                _ => Err(XDoOperationError)
-            }
-        }
+        xdo!(sys::xdo_mousemove(self.handle, x as c_int, y as c_int, screen as c_int))
+    }
+    pub fn click(&self, button: i32) -> OpResult {
+        xdo!(sys::xdo_click(self.handle, sys::CURRENTWINDOW, button as c_int))
     }
 }
 

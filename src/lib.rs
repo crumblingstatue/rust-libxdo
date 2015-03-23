@@ -58,6 +58,25 @@ macro_rules! xdo (
     }
 );
 
+macro_rules! try_microsecs (
+    ($duration: expr) => {{
+        let microsecs = match $duration.num_microseconds() {
+            Some(msecs) => msecs,
+            None => return Err(XDoOperationError{
+                kind: XDoOperationErrorKind::IntParamOutOfRange{value: -1, min: 0, max: 1000000}
+            })
+        };
+        if microsecs < 0 || microsecs > 1000000 {
+            return Err(XDoOperationError{
+                kind: XDoOperationErrorKind::IntParamOutOfRange{
+                    value: microsecs, min: 0, max: 1000000
+                }
+            });
+        }
+        microsecs
+    }}
+);
+
 impl XDo {
     pub fn new(display: Option<&str>) -> Result<XDo, XDoCreationError> {
         let display = match display {
@@ -82,21 +101,27 @@ impl XDo {
         xdo!(sys::xdo_click(self.handle, sys::CURRENTWINDOW, button as c_int))
     }
     pub fn type_text(&self, text: &str, delay: Duration) -> OpResult {
-        let microsecs = match delay.num_microseconds() {
-            Some(msecs) => msecs,
-            None => return Err(XDoOperationError{
-                kind: XDoOperationErrorKind::IntParamOutOfRange{value: -1, min: 0, max: 1000000}
-            })
-        };
-        if microsecs < 0 || microsecs > 1000000 {
-            return Err(XDoOperationError{
-                kind: XDoOperationErrorKind::IntParamOutOfRange{
-                    value: microsecs, min: 0, max: 1000000
-                }
-            });
-        }
+        let microsecs = try_microsecs!(delay);
         let string = try!(CString::new(text));
         xdo!(sys::xdo_type(self.handle, sys::CURRENTWINDOW, string.as_ptr(), microsecs as u32))
+    }
+    pub fn key_sequence(&self, sequence: &str, delay: Duration) -> OpResult {
+        let microsecs = try_microsecs!(delay);
+        let string = try!(CString::new(sequence));
+        xdo!(sys::xdo_keysequence(self.handle, sys::CURRENTWINDOW, string.as_ptr(),
+                                  microsecs as u32))
+    }
+    pub fn key_sequence_up(&self, sequence: &str, delay: Duration) -> OpResult {
+        let microsecs = try_microsecs!(delay);
+        let string = try!(CString::new(sequence));
+        xdo!(sys::xdo_keysequence_up(self.handle, sys::CURRENTWINDOW, string.as_ptr(),
+                                     microsecs as u32))
+    }
+    pub fn key_sequence_down(&self, sequence: &str, delay: Duration) -> OpResult {
+        let microsecs = try_microsecs!(delay);
+        let string = try!(CString::new(sequence));
+        xdo!(sys::xdo_keysequence_down(self.handle, sys::CURRENTWINDOW, string.as_ptr(),
+                                       microsecs as u32))
     }
 }
 

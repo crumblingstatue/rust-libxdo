@@ -97,8 +97,8 @@ impl XDo {
     pub fn move_mouse(&self, x: i32, y: i32, screen: i32) -> OpResult {
         xdo!(sys::xdo_mousemove(self.handle, x as c_int, y as c_int, screen as c_int))
     }
-    pub fn move_mouse_relative(&self, x: i32, y: i32, screen: i32) -> OpResult {
-        xdo!(sys::xdo_mousemove_relative(self.handle, x as c_int, y as c_int, screen as c_int))
+    pub fn move_mouse_relative(&self, x: i32, y: i32) -> OpResult {
+        xdo!(sys::xdo_mousemove_relative(self.handle, x as c_int, y as c_int))
     }
     pub fn click(&self, button: i32) -> OpResult {
         xdo!(sys::xdo_click(self.handle, sys::CURRENTWINDOW, button as c_int))

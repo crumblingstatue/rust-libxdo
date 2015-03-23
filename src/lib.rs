@@ -1,11 +1,13 @@
+#![feature(std_misc)]
+
 extern crate "libxdo-sys" as sys;
 extern crate libc;
 
 use std::ffi::{CString, NulError};
 use std::error::FromError;
 use libc::c_int;
-
 use std::ptr::null;
+use std::time::Duration;
 
 pub struct XDo {
     handle: *mut sys::xdo
@@ -24,7 +26,25 @@ impl FromError<NulError> for XDoCreationError {
 }
 
 #[derive(Debug)]
-struct XDoOperationError;
+enum XDoOperationErrorKind {
+    IntParamOutOfRange{value: i64, min: i64, max: i64},
+    NulError(NulError),
+    OperationFailed
+}
+
+#[derive(Debug)]
+struct XDoOperationError {
+    kind: XDoOperationErrorKind
+}
+
+impl FromError<NulError> for XDoOperationError {
+    fn from_error(err: NulError) -> XDoOperationError {
+        XDoOperationError {
+            kind: XDoOperationErrorKind::NulError(err)
+        }
+    }
+}
+
 pub type OpResult = Result<(), XDoOperationError>;
 
 macro_rules! xdo (
@@ -32,7 +52,7 @@ macro_rules! xdo (
         unsafe {
             match $fncall {
                 0 => Ok(()),
-                _ => Err(XDoOperationError)
+                _ => Err(XDoOperationError{ kind: XDoOperationErrorKind::OperationFailed })
             }
         }
     }
@@ -60,6 +80,23 @@ impl XDo {
     }
     pub fn click(&self, button: i32) -> OpResult {
         xdo!(sys::xdo_click(self.handle, sys::CURRENTWINDOW, button as c_int))
+    }
+    pub fn type_text(&self, text: &str, delay: Duration) -> OpResult {
+        let microsecs = match delay.num_microseconds() {
+            Some(msecs) => msecs,
+            None => return Err(XDoOperationError{
+                kind: XDoOperationErrorKind::IntParamOutOfRange{value: -1, min: 0, max: 1000000}
+            })
+        };
+        if microsecs < 0 || microsecs > 1000000 {
+            return Err(XDoOperationError{
+                kind: XDoOperationErrorKind::IntParamOutOfRange{
+                    value: microsecs, min: 0, max: 1000000
+                }
+            });
+        }
+        let string = try!(CString::new(text));
+        xdo!(sys::xdo_type(self.handle, sys::CURRENTWINDOW, string.as_ptr(), microsecs as u32))
     }
 }
 

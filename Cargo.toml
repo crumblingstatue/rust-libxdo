@@ -3,6 +3,11 @@
 name = "libxdo"
 version = "0.0.1"
 authors = ["Mika Attila <radiantstatue@gmail.com>"]
+license = "MIT"
+description = "Bindings to libxdo"
+readme = "README.md"
+repository = "https://github.com/crumblingstatue/rust-libxdo"
+keywords = ["X11", "automation", "xdotool", "libxdo", "xdo"]
 
 [dependencies]
 libc = "*"

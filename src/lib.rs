@@ -3,7 +3,7 @@
 #![feature(std_misc)]
 #![warn(missing_docs)]
 
-extern crate "libxdo-sys" as sys;
+extern crate libxdo_sys as sys;
 extern crate libc;
 
 use std::ffi::{CString, NulError};

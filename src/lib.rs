@@ -1,17 +1,14 @@
 //! High level bindings to [libxdo](http://www.semicomplete.com/files/xdotool/docs/html/)
 
-#![feature(std_misc)]
 #![warn(missing_docs)]
 
 extern crate libxdo_sys as sys;
 extern crate libc;
 
 use std::ffi::{CString, NulError};
-use std::error::FromError;
+use std::convert::From;
 use libc::c_int;
 use std::ptr::null;
-use std::time::Duration;
-
 
 /// An XDo instance
 pub struct XDo {
@@ -27,15 +24,14 @@ pub enum XDoCreationError {
     Unknown
 }
 
-impl FromError<NulError> for XDoCreationError {
-    fn from_error(err: NulError) -> XDoCreationError {
+impl From<NulError> for XDoCreationError {
+    fn from(err: NulError) -> XDoCreationError {
         XDoCreationError::NulError(err)
     }
 }
 
 #[derive(Debug)]
 enum XDoOperationErrorKind {
-    IntParamOutOfRange{value: i64, min: i64, max: i64},
     NulError(NulError),
     OperationFailed
 }
@@ -46,8 +42,8 @@ struct XDoOperationError {
     kind: XDoOperationErrorKind
 }
 
-impl FromError<NulError> for XDoOperationError {
-    fn from_error(err: NulError) -> XDoOperationError {
+impl From<NulError> for XDoOperationError {
+    fn from(err: NulError) -> XDoOperationError {
         XDoOperationError {
             kind: XDoOperationErrorKind::NulError(err)
         }
@@ -66,25 +62,6 @@ macro_rules! xdo (
             }
         }
     }
-);
-
-macro_rules! try_microsecs (
-    ($duration: expr) => {{
-        let microsecs = match $duration.num_microseconds() {
-            Some(msecs) => msecs,
-            None => return Err(XDoOperationError{
-                kind: XDoOperationErrorKind::IntParamOutOfRange{value: -1, min: 0, max: 1000000}
-            })
-        };
-        if microsecs < 0 || microsecs > 1000000 {
-            return Err(XDoOperationError{
-                kind: XDoOperationErrorKind::IntParamOutOfRange{
-                    value: microsecs, min: 0, max: 1000000
-                }
-            });
-        }
-        microsecs
-    }}
 );
 
 impl XDo {
@@ -135,31 +112,27 @@ impl XDo {
         xdo!(sys::xdo_mouseup(self.handle, sys::CURRENTWINDOW, button as c_int))
     }
     /// Types the specified text.
-    pub fn type_text(&self, text: &str, delay: Duration) -> OpResult {
-        let microsecs = try_microsecs!(delay);
+    pub fn type_text(&self, text: &str, delay_microsecs: u32) -> OpResult {
         let string = try!(CString::new(text));
-        xdo!(sys::xdo_type(self.handle, sys::CURRENTWINDOW, string.as_ptr(), microsecs as u32))
+        xdo!(sys::xdo_type(self.handle, sys::CURRENTWINDOW, string.as_ptr(), delay_microsecs))
     }
     /// Does the specified key sequence.
-    pub fn key_sequence(&self, sequence: &str, delay: Duration) -> OpResult {
-        let microsecs = try_microsecs!(delay);
+    pub fn key_sequence(&self, sequence: &str, delay_microsecs: u32) -> OpResult {
         let string = try!(CString::new(sequence));
         xdo!(sys::xdo_keysequence(self.handle, sys::CURRENTWINDOW, string.as_ptr(),
-                                  microsecs as u32))
+                                  delay_microsecs))
     }
     /// Releases the specified key sequence.
-    pub fn key_sequence_up(&self, sequence: &str, delay: Duration) -> OpResult {
-        let microsecs = try_microsecs!(delay);
+    pub fn key_sequence_up(&self, sequence: &str, delay_microsecs: u32) -> OpResult {
         let string = try!(CString::new(sequence));
         xdo!(sys::xdo_keysequence_up(self.handle, sys::CURRENTWINDOW, string.as_ptr(),
-                                     microsecs as u32))
+                                     delay_microsecs))
     }
     /// Presses the specified key sequence down.
-    pub fn key_sequence_down(&self, sequence: &str, delay: Duration) -> OpResult {
-        let microsecs = try_microsecs!(delay);
+    pub fn key_sequence_down(&self, sequence: &str, delay_microsecs: u32) -> OpResult {
         let string = try!(CString::new(sequence));
         xdo!(sys::xdo_keysequence_down(self.handle, sys::CURRENTWINDOW, string.as_ptr(),
-                                       microsecs as u32))
+                                       delay_microsecs))
     }
 }
 

@@ -1,7 +1,8 @@
 language: rust
 
-before_install:
-  - sudo apt-get update
-
 install:
-  - sudo apt-get install libxdo-dev
+  - wget https://github.com/jordansissel/xdotool/releases/download/v3.20150503.1/xdotool-3.20150503.1.tar.gz
+  - tar xf xdotool-3.20150503.1.tar.gz
+  - cd xdotool-3.20150503.1
+  - make
+  - sudo make install

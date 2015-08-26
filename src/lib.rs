@@ -12,7 +12,7 @@ use std::ptr::null;
 
 /// An XDo instance
 pub struct XDo {
-    handle: *mut sys::xdo
+    handle: *mut sys::xdo_t
 }
 
 /// An error that can happen when trying to create an XDo instance.

@@ -12,4 +12,4 @@ keywords = ["X11", "automation", "xdotool", "libxdo", "xdo"]
 
 [dependencies]
 libc = "*"
-libxdo-sys = "0.1.0"
+libxdo-sys = "0.9.0"

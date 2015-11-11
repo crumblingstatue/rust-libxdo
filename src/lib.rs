@@ -12,7 +12,7 @@ use std::ptr::null;
 
 /// An XDo instance
 pub struct XDo {
-    handle: *mut sys::xdo_t
+    handle: *mut sys::xdo_t,
 }
 
 /// An error that can happen when trying to create an XDo instance.
@@ -21,7 +21,7 @@ pub enum XDoCreationError {
     /// The parameter passed in contained a nul character.
     NulError(NulError),
     /// Unknown error
-    Unknown
+    Unknown,
 }
 
 impl From<NulError> for XDoCreationError {
@@ -33,20 +33,18 @@ impl From<NulError> for XDoCreationError {
 #[derive(Debug)]
 enum XDoOperationErrorKind {
     NulError(NulError),
-    OperationFailed
+    OperationFailed,
 }
 
 /// An error originating from an XDo operation.
 #[derive(Debug)]
 struct XDoOperationError {
-    kind: XDoOperationErrorKind
+    kind: XDoOperationErrorKind,
 }
 
 impl From<NulError> for XDoOperationError {
     fn from(err: NulError) -> XDoOperationError {
-        XDoOperationError {
-            kind: XDoOperationErrorKind::NulError(err)
-        }
+        XDoOperationError { kind: XDoOperationErrorKind::NulError(err) }
     }
 }
 
@@ -80,16 +78,14 @@ impl XDo {
             Some(display) => {
                 let cstr = try!(CString::new(display));
                 cstr.as_ptr()
-            },
-            None => null()
+            }
+            None => null(),
         };
         let handle = unsafe { sys::xdo_new(display) };
         if handle.is_null() {
             return Err(XDoCreationError::Unknown);
         }
-        Ok(XDo {
-            handle: handle
-        })
+        Ok(XDo { handle: handle })
     }
     /// Moves the mouse to the specified position.
     pub fn move_mouse(&self, x: i32, y: i32, screen: i32) -> OpResult {
@@ -114,31 +110,41 @@ impl XDo {
     /// Types the specified text.
     pub fn enter_text(&self, text: &str, delay_microsecs: u32) -> OpResult {
         let string = try!(CString::new(text));
-        xdo!(sys::xdo_enter_text_window(self.handle, sys::CURRENTWINDOW, string.as_ptr(),
+        xdo!(sys::xdo_enter_text_window(self.handle,
+                                        sys::CURRENTWINDOW,
+                                        string.as_ptr(),
                                         delay_microsecs))
     }
     /// Does the specified key sequence.
     pub fn send_keysequence(&self, sequence: &str, delay_microsecs: u32) -> OpResult {
         let string = try!(CString::new(sequence));
-        xdo!(sys::xdo_send_keysequence_window(self.handle, sys::CURRENTWINDOW, string.as_ptr(),
+        xdo!(sys::xdo_send_keysequence_window(self.handle,
+                                              sys::CURRENTWINDOW,
+                                              string.as_ptr(),
                                               delay_microsecs))
     }
     /// Releases the specified key sequence.
     pub fn send_keysequence_up(&self, sequence: &str, delay_microsecs: u32) -> OpResult {
         let string = try!(CString::new(sequence));
-        xdo!(sys::xdo_send_keysequence_window_up(self.handle, sys::CURRENTWINDOW, string.as_ptr(),
+        xdo!(sys::xdo_send_keysequence_window_up(self.handle,
+                                                 sys::CURRENTWINDOW,
+                                                 string.as_ptr(),
                                                  delay_microsecs))
     }
     /// Presses the specified key sequence down.
     pub fn send_keysequence_down(&self, sequence: &str, delay_microsecs: u32) -> OpResult {
         let string = try!(CString::new(sequence));
-        xdo!(sys::xdo_send_keysequence_window_down(self.handle, sys::CURRENTWINDOW,
-                                                   string.as_ptr(), delay_microsecs))
+        xdo!(sys::xdo_send_keysequence_window_down(self.handle,
+                                                   sys::CURRENTWINDOW,
+                                                   string.as_ptr(),
+                                                   delay_microsecs))
     }
 }
 
 impl Drop for XDo {
     fn drop(&mut self) {
-        unsafe { sys::xdo_free(self.handle); }
+        unsafe {
+            sys::xdo_free(self.handle);
+        }
     }
 }

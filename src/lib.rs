@@ -38,7 +38,7 @@ enum XDoOperationErrorKind {
 
 /// An error originating from an XDo operation.
 #[derive(Debug)]
-struct XDoOperationError {
+pub struct XDoOperationError {
     kind: XDoOperationErrorKind,
 }
 

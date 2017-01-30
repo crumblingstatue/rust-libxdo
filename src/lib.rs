@@ -3,11 +3,9 @@
 #![warn(missing_docs)]
 
 extern crate libxdo_sys as sys;
-extern crate libc;
 
 use std::ffi::{CString, NulError};
 use std::convert::From;
-use libc::c_int;
 use std::ptr::null;
 
 /// An XDo instance
@@ -89,23 +87,23 @@ impl XDo {
     }
     /// Moves the mouse to the specified position.
     pub fn move_mouse(&self, x: i32, y: i32, screen: i32) -> OpResult {
-        xdo!(sys::xdo_move_mouse(self.handle, x as c_int, y as c_int, screen as c_int))
+        xdo!(sys::xdo_move_mouse(self.handle, x, y, screen))
     }
     /// Moves the mouse relative to the current position.
     pub fn move_mouse_relative(&self, x: i32, y: i32) -> OpResult {
-        xdo!(sys::xdo_move_mouse_relative(self.handle, x as c_int, y as c_int))
+        xdo!(sys::xdo_move_mouse_relative(self.handle, x, y))
     }
     /// Does a mouse click.
     pub fn click(&self, button: i32) -> OpResult {
-        xdo!(sys::xdo_click_window(self.handle, sys::CURRENTWINDOW, button as c_int))
+        xdo!(sys::xdo_click_window(self.handle, sys::CURRENTWINDOW, button))
     }
     /// Holds a mouse button down.
     pub fn mouse_down(&self, button: i32) -> OpResult {
-        xdo!(sys::xdo_mouse_down(self.handle, sys::CURRENTWINDOW, button as c_int))
+        xdo!(sys::xdo_mouse_down(self.handle, sys::CURRENTWINDOW, button))
     }
     /// Releases a mouse button.
     pub fn mouse_up(&self, button: i32) -> OpResult {
-        xdo!(sys::xdo_mouse_up(self.handle, sys::CURRENTWINDOW, button as c_int))
+        xdo!(sys::xdo_mouse_up(self.handle, sys::CURRENTWINDOW, button))
     }
     /// Types the specified text.
     pub fn enter_text(&self, text: &str, delay_microsecs: u32) -> OpResult {

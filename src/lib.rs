@@ -69,7 +69,7 @@ impl XDo {
     pub fn new(display: Option<&str>) -> Result<XDo, CreationError> {
         let display = match display {
             Some(display) => {
-                let cstr = try!(CString::new(display));
+                let cstr = CString::new(display)?;
                 cstr.as_ptr()
             }
             None => ::std::ptr::null(),
@@ -102,7 +102,7 @@ impl XDo {
     }
     /// Types the specified text.
     pub fn enter_text(&self, text: &str, delay_microsecs: u32) -> OpResult {
-        let string = try!(CString::new(text));
+        let string = CString::new(text)?;
         xdo!(sys::xdo_enter_text_window(self.handle,
                                         sys::CURRENTWINDOW,
                                         string.as_ptr(),
@@ -110,7 +110,7 @@ impl XDo {
     }
     /// Does the specified key sequence.
     pub fn send_keysequence(&self, sequence: &str, delay_microsecs: u32) -> OpResult {
-        let string = try!(CString::new(sequence));
+        let string = CString::new(sequence)?;
         xdo!(sys::xdo_send_keysequence_window(self.handle,
                                               sys::CURRENTWINDOW,
                                               string.as_ptr(),
@@ -118,7 +118,7 @@ impl XDo {
     }
     /// Releases the specified key sequence.
     pub fn send_keysequence_up(&self, sequence: &str, delay_microsecs: u32) -> OpResult {
-        let string = try!(CString::new(sequence));
+        let string = CString::new(sequence)?;
         xdo!(sys::xdo_send_keysequence_window_up(self.handle,
                                                  sys::CURRENTWINDOW,
                                                  string.as_ptr(),
@@ -126,7 +126,7 @@ impl XDo {
     }
     /// Presses the specified key sequence down.
     pub fn send_keysequence_down(&self, sequence: &str, delay_microsecs: u32) -> OpResult {
-        let string = try!(CString::new(sequence));
+        let string = CString::new(sequence)?;
         xdo!(sys::xdo_send_keysequence_window_down(self.handle,
                                                    sys::CURRENTWINDOW,
                                                    string.as_ptr(),

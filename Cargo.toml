@@ -11,4 +11,4 @@ documentation = "http://crumblingstatue.github.io/doc/libxdo/libxdo/index.html"
 keywords = ["X11", "automation", "xdotool", "libxdo", "xdo"]
 
 [dependencies]
-libxdo-sys = "0.10.0"
+libxdo-sys = "0.11.0"

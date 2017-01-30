@@ -6,82 +6,77 @@ extern crate libxdo_sys as sys;
 
 use std::ffi::{CString, NulError};
 use std::convert::From;
-use std::ptr::null;
 
-/// An XDo instance
+/// The main handle type which provides access to the various operations.
 pub struct XDo {
     handle: *mut sys::xdo_t,
 }
 
-/// An error that can happen when trying to create an XDo instance.
+/// An error that can happen when trying to create an `XDo` instance.
 #[derive(Debug)]
-pub enum XDoCreationError {
-    /// The parameter passed in contained a nul character.
+pub enum CreationError {
+    /// The provided string parameter had an interior null byte in it.
     NulError(NulError),
-    /// Unknown error
-    Unknown,
+    /// Libxdo failed to create an instance. No further information available.
+    Ffi,
 }
 
-impl From<NulError> for XDoCreationError {
-    fn from(err: NulError) -> XDoCreationError {
-        XDoCreationError::NulError(err)
+impl From<NulError> for CreationError {
+    fn from(err: NulError) -> CreationError {
+        CreationError::NulError(err)
     }
 }
 
+/// An error that can happen while executing an operation.
 #[derive(Debug)]
-enum XDoOperationErrorKind {
-    NulError(NulError),
-    OperationFailed,
+pub enum OpError {
+    /// The provided string parameter had an interior null byte in it.
+    Nul(NulError),
+    /// Libxdo failed, returning an error code.
+    Ffi(i32),
 }
 
-/// An error originating from an XDo operation.
-#[derive(Debug)]
-pub struct XDoOperationError {
-    kind: XDoOperationErrorKind,
-}
-
-impl From<NulError> for XDoOperationError {
-    fn from(err: NulError) -> XDoOperationError {
-        XDoOperationError { kind: XDoOperationErrorKind::NulError(err) }
+impl From<NulError> for OpError {
+    fn from(err: NulError) -> Self {
+        OpError::Nul(err)
     }
 }
 
-/// Result of an XDo operation.
-pub type OpResult = Result<(), XDoOperationError>;
+/// Result of an `XDo` operation.
+pub type OpResult = Result<(), OpError>;
 
 macro_rules! xdo (
     ($fncall: expr) => {
         unsafe {
             match $fncall {
                 0 => Ok(()),
-                _ => Err(XDoOperationError{ kind: XDoOperationErrorKind::OperationFailed })
+                code => Err(OpError::Ffi(code))
             }
         }
     }
 );
 
 impl XDo {
-    /// Creates a new XDo instance.
+    /// Creates a new `XDo` instance.
     ///
     /// # Parameters
     ///
-    /// display - An optional string display name, such as ":0". If None, uses the environment
-    /// DISPLAY.
+    /// display - An optional string display name, such as `":0"`. If `None`, uses `$DISPLAY`.
     ///
     /// # Returns
     ///
-    /// Returns a new XDo instance, or an XDoCreationError on error.
-    pub fn new(display: Option<&str>) -> Result<XDo, XDoCreationError> {
+    /// Returns a new `XDo` instance, or a `CreationError` on error.
+    pub fn new(display: Option<&str>) -> Result<XDo, CreationError> {
         let display = match display {
             Some(display) => {
                 let cstr = try!(CString::new(display));
                 cstr.as_ptr()
             }
-            None => null(),
+            None => ::std::ptr::null(),
         };
         let handle = unsafe { sys::xdo_new(display) };
         if handle.is_null() {
-            return Err(XDoCreationError::Unknown);
+            return Err(CreationError::Ffi);
         }
         Ok(XDo { handle: handle })
     }

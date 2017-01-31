@@ -67,10 +67,11 @@ impl XDo {
     ///
     /// Returns a new `XDo` instance, or a `CreationError` on error.
     pub fn new(display: Option<&str>) -> Result<XDo, CreationError> {
+        let c_string;
         let display = match display {
             Some(display) => {
-                let cstr = CString::new(display)?;
-                cstr.as_ptr()
+                c_string = CString::new(display)?;
+                c_string.as_ptr()
             }
             None => ::std::ptr::null(),
         };

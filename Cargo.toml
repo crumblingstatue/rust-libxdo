@@ -7,7 +7,7 @@ license = "MIT"
 description = "Bindings to libxdo"
 readme = "README.md"
 repository = "https://github.com/crumblingstatue/rust-libxdo"
-documentation = "http://crumblingstatue.github.io/doc/libxdo/libxdo/index.html"
+documentation = "https://docs.rs/libxdo"
 keywords = ["X11", "automation", "xdotool", "libxdo", "xdo"]
 
 [dependencies]

@@ -6,6 +6,8 @@ extern crate libxdo_sys as sys;
 
 use std::ffi::{CString, NulError};
 use std::convert::From;
+use std::error::Error;
+use std::fmt;
 
 /// The main handle type which provides access to the various operations.
 pub struct XDo {
@@ -16,14 +18,42 @@ pub struct XDo {
 #[derive(Debug)]
 pub enum CreationError {
     /// The provided string parameter had an interior null byte in it.
-    NulError(NulError),
+    Nul(NulError),
     /// Libxdo failed to create an instance. No further information available.
     Ffi,
 }
 
+impl fmt::Display for CreationError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            CreationError::Nul(ref err) => {
+                write!(f,
+                       "Failed to create XDo instance: Nul byte in argument: {}",
+                       err)
+            }
+            CreationError::Ffi => write!(f, "Libxdo failed to create an instance."),
+        }
+    }
+}
+
+impl Error for CreationError {
+    fn description(&self) -> &str {
+        match *self {
+            CreationError::Nul(_) => "libxdo creation error: Nul byte in argument",
+            CreationError::Ffi => "libxdo creation error: Ffi error",
+        }
+    }
+    fn cause(&self) -> Option<&Error> {
+        match *self {
+            CreationError::Nul(ref err) => Some(err),
+            CreationError::Ffi => None,
+        }
+    }
+}
+
 impl From<NulError> for CreationError {
     fn from(err: NulError) -> CreationError {
-        CreationError::NulError(err)
+        CreationError::Nul(err)
     }
 }
 
@@ -34,6 +64,32 @@ pub enum OpError {
     Nul(NulError),
     /// Libxdo failed, returning an error code.
     Ffi(i32),
+}
+
+impl fmt::Display for OpError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            OpError::Nul(ref err) => {
+                write!(f, "Xdo operation failed: Nul byte in argument: {}", err)
+            }
+            OpError::Ffi(code) => write!(f, "Xdo operation failed. Error code {}.", code),
+        }
+    }
+}
+
+impl Error for OpError {
+    fn description(&self) -> &str {
+        match *self {
+            OpError::Nul(_) => "xdo operation failure: Nul byte in argument",
+            OpError::Ffi(_) => "xdo operation failure: Ffi error",
+        }
+    }
+    fn cause(&self) -> Option<&Error> {
+        match *self {
+            OpError::Nul(ref err) => Some(err),
+            OpError::Ffi(_) => None,
+        }
+    }
 }
 
 impl From<NulError> for OpError {
